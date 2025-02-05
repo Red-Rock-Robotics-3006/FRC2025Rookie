@@ -14,11 +14,13 @@ import frc.robot.Utils3006.SmartDashboardNumber;
 
 public class Climber extends SubsystemBase{
 
-    private SmartDashboardNumber spoolInSpeed = new SmartDashboardNumber("climber/spool in speed", 0);
-    private SmartDashboardNumber spoolOutSpeed = new SmartDashboardNumber("climber/spool out speed", 0);
-    private double ClimberLimit = 4;// TODO FILLER
-    private boolean ClimberForward = false;
-    private TalonFX m_ClimberMotor = new TalonFX(0, "*");//TODO FILLER
+    private TalonFX m_ClimberMotor = new TalonFX(0, "*"); //TODO FILLER
+
+    private SmartDashboardNumber spoolInSpeed = new SmartDashboardNumber("climber/spoolInSpeed", 0.1);
+    private SmartDashboardNumber spoolOutSpeed = new SmartDashboardNumber("climber/spoolOutSpeed", -0.1);
+
+    private double climberLimit = 4; // TODO FILLER
+
     private CurrentLimitsConfigs mainClimberCurrentLimitsConfigs = new CurrentLimitsConfigs()
             .withSupplyCurrentLimit(80)
             .withSupplyCurrentLimitEnable(true)
@@ -27,42 +29,39 @@ public class Climber extends SubsystemBase{
 
 
     private Climber() {
-
         super("Climber");
+
+
         this.m_ClimberMotor.getConfigurator().apply(
             new MotorOutputConfigs()
-                .withInverted(InvertedValue.CounterClockwise_Positive)//TODO FILLER
-                .withPeakForwardDutyCycle(1d)//TODO FILLER
-                .withPeakReverseDutyCycle(-1d)//TODO FILLER
+                .withInverted(InvertedValue.CounterClockwise_Positive) //TODO FILLER
+                .withPeakForwardDutyCycle(1d) //TODO FILLER
+                .withPeakReverseDutyCycle(-1d) //TODO FILLER
                 .withNeutralMode(NeutralModeValue.Brake)
         );
         this.m_ClimberMotor.getConfigurator().apply(mainClimberCurrentLimitsConfigs);
     }
 
     public void spoolInClimber() {
-        this.m_ClimberMotor.setControl(new DutyCycleOut(spoolInSpeed.getNumber()));
-        ClimberForward = true;
+        if(!checkSpoolInLimit())
+            this.m_ClimberMotor.setControl(new DutyCycleOut(spoolInSpeed.getNumber()));
     }
 
     public void spoolOutClimber() {
-        this.m_ClimberMotor.setControl(new DutyCycleOut(spoolOutSpeed.getNumber()));
-        ClimberForward = false;
+        if(!checkSpoolOutLimit())
+            this.m_ClimberMotor.setControl(new DutyCycleOut(spoolOutSpeed.getNumber()));
     }
 
     public void stopClimber() {
         this.m_ClimberMotor.setControl(new DutyCycleOut(0));
-        ClimberForward = false;
     }
 
     public boolean checkSpoolInLimit(){
-        return (m_ClimberMotor.getPosition().getValueAsDouble() >= ClimberLimit);
-    }
-    public boolean checkSpoolOutLimit(){
-        return (m_ClimberMotor.getPosition().getValueAsDouble() <= 0);
+        return m_ClimberMotor.getPosition().getValueAsDouble() >= climberLimit;
     }
 
-    @Override
-    public void periodic() {
+    public boolean checkSpoolOutLimit(){
+        return m_ClimberMotor.getPosition().getValueAsDouble() <= 0;
     }
 
 
@@ -73,11 +72,12 @@ public class Climber extends SubsystemBase{
             null,
             (interrupted) -> {this.stopClimber();},
             // TODO
-            // Move this to RobotContainer and add an interrupt condition
+            // Move these to RobotContainer and add an interrupt condition
             // of the button that activated it being released
             () -> {return this.checkSpoolInLimit();},
             this);
     }
+
     public Command SpoolOutCommand()
     {
         return new FunctionalCommand(
