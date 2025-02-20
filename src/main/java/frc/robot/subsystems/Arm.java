@@ -10,7 +10,6 @@ public class Arm extends SubsystemBase {
     public Command goToPosition(Position pos){
         return new Command() {};
     }
-    public boolean posBelowThreshold() {
-        return true;
-    }
+    public boolean posBelowThreshold() {return true;}
+    public Command scoreBarge(){ return new Command() {};};
 }
