@@ -48,16 +48,10 @@ public class Superstructure extends SubsystemBase {
             );    
     }
     private Command scoreCoral(){
-        return new InstantCommand(
-            () -> this.endEffector.scoreCoral(),
-            this.endEffector
-            );    
+        return this.endEffector.outakeCoral();
     }
     private Command scoreAlgae(){
-        return new InstantCommand(
-            () -> this.endEffector.scoreAlgae(),
-            this.endEffector
-            );    
+        return this.endEffector.outakeAlgae();
     }
     private Command scoreBarge(){
         return new SequentialCommandGroup(
