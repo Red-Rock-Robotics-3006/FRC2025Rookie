@@ -29,8 +29,11 @@ import frc.robot.subsystems.Superstructure.Position;
 public class Arm extends SubsystemBase {
     private final RedRockTalon armMotor = new RedRockTalon(41, "arm-motor", "*");
     private final CANcoder m_encoder = new CANcoder(42);
+
     private SmartDashboardNumber armTolerance = new SmartDashboardNumber("arm/arm-tolerance", 0);
     private Position targetPosition = Position.STOW;
+
+    private static Arm instance = null;
 
     private static Map<Position, SmartDashboardNumber > POSITION_CONVERSIONS = Map.of(
         Position.L4, new SmartDashboardNumber("arm/arm-l4", 0),
@@ -45,7 +48,7 @@ public class Arm extends SubsystemBase {
         Position.BARGE, new SmartDashboardNumber("arm/arm-barge", 0)
     );
 
-    public Arm(){
+    private Arm(){
         super("Arm");
 
         armMotor.withMotorOutputConfigs(
@@ -75,24 +78,51 @@ public class Arm extends SubsystemBase {
         );
     }
 
+    /**
+     * Checks if the arm is at target position
+     * @return true if the arm is on target
+     */
     public boolean atTarget(){
         return Math.abs(Arm.POSITION_CONVERSIONS.get(targetPosition).getNumber()
         - this.armMotor.motor.getPosition().getValueAsDouble()) < armTolerance.getNumber();
     }
     
-    // TODO: Ensure no illegal movements
-    public Command goToPosition(Position pos){
+    /**
+     * Moves the arm to a Position
+     * @param pos the position to move to
+     * @return a Command to do so
+     */
+    public Command goToPosition(Position pos){ // TODO: Ensure no illegal movements
         this.targetPosition = pos;
         return Commands.runOnce(
             () -> {this.armMotor.setMotionMagicPosition(Arm.POSITION_CONVERSIONS.get(pos).getNumber());}
         );
     }
 
+    /**
+     * Checks if the arm is in danger of hitting the floor
+     * @return true if the arm is too low
+     */
     public boolean belowThreshold() {
         return this.armMotor.motor.getPosition().getValueAsDouble() < this.armTolerance.getNumber();
     }
 
+    /**
+     * Swings arm to score in the Barge
+     * @return a Command to do so
+     */
     public Command scoreBarge(){
         return goToPosition(Position.L3); // A bit jank but it should work
-    };
+    }
+
+    /**
+     * Get singleton instance
+     * @return the Arm
+     */
+    public static Arm getInstance()
+    {
+        if(instance == null)
+            instance = new Arm();
+        return instance;
+    }
 }

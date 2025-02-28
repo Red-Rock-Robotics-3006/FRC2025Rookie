@@ -50,6 +50,8 @@ public class EndEffector extends SubsystemBase {
     private Position targetPosition = Position.STOW;
     private boolean running = false;
 
+    private static EndEffector instance = null;
+
     private static Map<Position, SmartDashboardNumber > POSITION_CONVERSIONS = Map.of(
         Position.L4, new SmartDashboardNumber("endeffector/endeffector-l4", 0),
         Position.L3, new SmartDashboardNumber("endeffector/endeffector-l3", 0),
@@ -63,7 +65,7 @@ public class EndEffector extends SubsystemBase {
         Position.BARGE, new SmartDashboardNumber("endeffector/endeffector-barge", 0)
     );
 
-    public EndEffector(){
+    private EndEffector(){
         super("End Effector");
         endEffectorMotor.withMotorOutputConfigs(
             new MotorOutputConfigs()
@@ -108,6 +110,10 @@ public class EndEffector extends SubsystemBase {
         .withSpikeThreshold(55);       
     }
 
+    /**
+     * Sets the drive speed to a specified power
+     * @param speed the power to drive at
+     */
     private void setSpeed(double speed){
         if(speed == 0)
             this.running = false;
@@ -116,11 +122,20 @@ public class EndEffector extends SubsystemBase {
         this.endEffectorMotor.motor.set(speed);
     }
     
+    /**
+     * Checks if the endeffector is at target position
+     * @return true if the endeffector is on target
+     */
     public boolean atTarget(){
         return Math.abs(EndEffector.POSITION_CONVERSIONS.get(targetPosition).getNumber()
             - this.wristMotor.motor.getPosition().getValueAsDouble()) < wristTolerance.getNumber();
     }
 
+    /**
+     * Moves the endeffector to a Position
+     * @param pos the position to move to
+     * @return a Command to do so
+     */
     public Command goToPosition(Position pos){
         this.targetPosition = pos;
         return Commands.runOnce(
@@ -128,6 +143,10 @@ public class EndEffector extends SubsystemBase {
             this);
     }
 
+    /**
+     * Dispenses Algae with momentum into the Barge
+     * @return
+     */
     public Command scoreBarge(){
         return new ParallelCommandGroup(
             this.goToPosition(Position.PROCESSOR), // Should open up algae
@@ -135,10 +154,18 @@ public class EndEffector extends SubsystemBase {
         ); // Will have to be tuned experimentally
     };
 
+    /**
+     * Detects if Coral is present in the endeffector
+     * @return true if coral is present
+     */
     private boolean coralDetected(){
         return endEffectorCoralRange.getDistance().getValueAsDouble() < coralThreshold.getNumber();
     }
 
+    /**
+     * Auto intake Coral
+     * @return a Command to do so
+     */
     public Command intakeCoral(){
         return new FunctionalCommand(
             () -> setSpeed(coralIntakeSpeed.getNumber()),
@@ -149,6 +176,10 @@ public class EndEffector extends SubsystemBase {
         );
     }
 
+    /**
+     * Auto intake Algae
+     * @return a Command to do so
+     */
     public Command intakeAlgae(){
         return new FunctionalCommand(
             () -> setSpeed(algaeIntakeSpeed.getNumber()),
@@ -159,6 +190,10 @@ public class EndEffector extends SubsystemBase {
         );
     }
 
+    /**
+     * Auto dispense Coral
+     * @return a Command to do so
+     */
     public Command outtakeCoral(){
         return new SequentialCommandGroup(
             Commands.runOnce(() -> setSpeed(coralOuttakeSpeed.getNumber())),
@@ -168,6 +203,10 @@ public class EndEffector extends SubsystemBase {
         );
     }
 
+    /**
+     * Auto dispense Algae
+     * @return a Command to do so
+     */
     public Command outtakeAlgae(){
         return new SequentialCommandGroup(
             Commands.runOnce(() -> setSpeed(algaeOuttakeSpeed.getNumber())),
@@ -176,6 +215,10 @@ public class EndEffector extends SubsystemBase {
         );
     }
 
+    /**
+     * Move the endeffector to a normal position and zero it
+     * @return a Command to do so
+     */
     public Command normalizeCommand(){
         return new FunctionalCommand(
             () -> setSpeed(normalizeSpeed.getNumber()),
@@ -188,8 +231,23 @@ public class EndEffector extends SubsystemBase {
         );
     }
 
-    public boolean idle()
+    /**
+     * CHeck if the endeffector has finished control
+     * @return true if the endeffector is idle
+     */
+    public boolean isIdle()
     {
         return this.atTarget() && !this.running;
+    }
+
+    /**
+     * Get singleton instance
+     * @return the EndEffector
+     */
+    public static EndEffector getInstance()
+    {
+        if(instance == null)
+            instance = new EndEffector();
+        return instance;
     }
 }
