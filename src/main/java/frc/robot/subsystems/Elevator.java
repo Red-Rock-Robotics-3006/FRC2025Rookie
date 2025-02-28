@@ -12,15 +12,16 @@ public class Elevator extends SubsystemBase {
     public boolean atTarget(){return true;}
     /**
      * Moves the elevator to a Position
-     * @param pos the position to move to
+     * @param pos the Position to move to
      * @return a Command to do so
      */
     public Command goToPosition(Position pos){return new Command() {};}
     /**
      * Checks if a Position may drop the arm too low
+     * @param pos the Position to check
      * @return true if the Position is below a threshold
      */
-    public boolean posBelowThreshold(Position position) {return true;}
+    public boolean posBelowThreshold(Position pos) {return true;}
     /**
      * Move the endeffector to a normal position and zero it
      * @return a Command to do so

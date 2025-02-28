@@ -133,7 +133,7 @@ public class EndEffector extends SubsystemBase {
 
     /**
      * Moves the endeffector to a Position
-     * @param pos the position to move to
+     * @param pos the Position to move to
      * @return a Command to do so
      */
     public Command goToPosition(Position pos){

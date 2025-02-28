@@ -51,16 +51,16 @@ public class Superstructure {
 
     /**
      * Moves subsystems to a Position
-     * @param position the position to move to
+     * @param pos the position to move to
      * @return a Command to do so
      */
-    public Command goToPosition(Position position)
+    public Command goToPosition(Position pos)
     {
         return new SequentialCommandGroup(
-            this.arm.goToPosition(position),
-            new WaitUntilCommand(() -> !(elevator.posBelowThreshold(position) && arm.belowThreshold())),
-            this.elevator.goToPosition(position),
-            this.endEffector.goToPosition(position)
+            this.arm.goToPosition(pos),
+            new WaitUntilCommand(() -> !(elevator.posBelowThreshold(pos) && arm.belowThreshold())),
+            this.elevator.goToPosition(pos),
+            this.endEffector.goToPosition(pos)
         );
     }
 

@@ -89,7 +89,7 @@ public class Arm extends SubsystemBase {
     
     /**
      * Moves the arm to a Position
-     * @param pos the position to move to
+     * @param pos the Position to move to
      * @return a Command to do so
      */
     public Command goToPosition(Position pos){ // TODO: Ensure no illegal movements
