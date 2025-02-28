@@ -9,4 +9,5 @@ public class Elevator extends SubsystemBase {
     public boolean atTarget(){return true;}
     public Command goToPosition(Position pos){return new Command() {};}
     public boolean posBelowThreshold(Position position) {return true;}
+    public Command normalizeCommand() {return new Command() {};}
 }
